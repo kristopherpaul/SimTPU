@@ -1,4 +1,3 @@
-use crate::config::TpuConfig;
 use crate::hardware::mmu::{Mmu, MmuError};
 
 pub struct Tpu {
@@ -6,9 +5,9 @@ pub struct Tpu {
 }
 
 impl Tpu {
-    pub fn new(config: TpuConfig) -> Result<Self, TpuError> {
+    pub fn new() -> Result<Self, TpuError> {
         Ok(Self {
-            mmu: Mmu::new(config.mmu)?,
+            mmu: Mmu::new()?,
         })
     }
 

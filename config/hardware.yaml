@@ -1,0 +1,6 @@
+mmu:
+  num_rows: 2
+  num_cols: 2
+  pe:
+    act_bitw: 8
+    psum_bitw: 16

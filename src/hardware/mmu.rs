@@ -1,5 +1,5 @@
 use super::pe::{Pe, PeError};
-use crate::config::MmuConfig;
+use crate::types::{MMU_ROWS, MMU_COLS};
 
 pub struct Mmu {
     num_rows: usize,
@@ -8,20 +8,17 @@ pub struct Mmu {
 }
 
 impl Mmu {
-    pub fn new(config: MmuConfig) -> Result<Self, MmuError> {
+    pub fn new() -> Result<Self, MmuError> {
         Ok(Self {
-            num_rows: config.num_rows,
-            num_cols: config.num_cols,
-            pe: Pe::new(config.pe)?,
+            num_rows: MMU_ROWS,
+            num_cols: MMU_COLS,
+            pe: Pe::new()?,
         })
     }
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum MmuError {
-    #[error("invalid systolic array dimensions: {rows}x{cols}")]
-    InvalidDimensions {rows: usize, cols: usize},
-
     #[error("pe error: {0}")]
     Pe(#[from] PeError),
 }
