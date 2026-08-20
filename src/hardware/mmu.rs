@@ -1,4 +1,4 @@
-use super::pe::{Pe, PeError};
+use super::pe::{Pe, PeError, PeInputs, PeStrobes};
 use crate::types::{MMU_ROWS, MMU_COLS};
 
 pub struct Mmu {
@@ -14,6 +14,19 @@ impl Mmu {
             num_cols: MMU_COLS,
             pe: Pe::new()?,
         })
+    }
+
+    pub fn tick(&mut self) -> Result<(), MmuError> {
+        self.pe.tick(PeInputs {
+            weight: 0,
+            act: 0,
+            psum: 0,
+            strobes: PeStrobes {
+                load_weight: false,
+                reset: false
+            }
+        })?;
+        Ok(())
     }
 }
 

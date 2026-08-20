@@ -12,6 +12,12 @@ impl Tpu {
     }
 
     pub fn run(&mut self) -> Result<(), TpuError> {
+        self.tick()?;
+        Ok(())
+    }
+
+    fn tick(&mut self) -> Result<(), TpuError> {
+        self.mmu.tick()?;
         Ok(())
     }
 }
