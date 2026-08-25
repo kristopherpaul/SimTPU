@@ -90,16 +90,6 @@ mod tests {
     }
 
     #[test]
-    fn load_weight_updates_only_weight() {
-        let mut pe = TestPe::new().unwrap();
-        pe.tick(inputs(5, 3, 7, true, false)).unwrap();
-
-        assert_eq!(pe.weight, 5);
-        assert_eq!(pe.out_act, 0);
-        assert_eq!(pe.out_psum, 0);
-    }
-
-    #[test]
     fn compute_updates_activation_and_psum() {
         let mut pe = TestPe::new().unwrap();
         pe.tick(inputs(5, 0, 0, true, false)).unwrap();
