@@ -1,6 +1,7 @@
 use crate::types::{PeAct, PePsum};
 use num_traits::{WrappingAdd, WrappingMul};
 
+#[derive(Copy, Clone)]
 pub struct Pe<W = PeAct, A = PeAct, P = PePsum> {
     weight: W,
     out_act: A,
@@ -38,11 +39,12 @@ where
             self.weight = W::default();
             self.out_act = A::default();
             self.out_psum = P::default();
-        } else if inputs.strobes.load_weight {
-            self.weight = inputs.weight;
         } else {
             self.out_act = inputs.act;
             self.out_psum = inputs.act.into().wrapping_mul(&self.weight.into()).wrapping_add(&inputs.psum);
+            if inputs.strobes.load_weight {
+                self.weight = inputs.weight;
+            }
         }
 
         Ok(())
