@@ -65,3 +65,96 @@ pub enum WeightFifoError {
     #[error("fifo error: {0}")]
     Fifo(#[from] FifoError),
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    type TestWeightFifo = WeightFifo<u8, 3>;
+
+    fn inputs(weights: [u8; 3], load_weight: [bool; 3], release_weight: [bool; 3], reset: bool) -> WeightFifoInputs<u8, 3> {
+        WeightFifoInputs {
+            weights,
+            strobes: WeightFifoStrobes {
+                load_weight,
+                release_weight,
+                reset,
+            },
+        }
+    }
+
+    #[test]
+    fn new_initializes_all_fifos_and_outputs_to_default() {
+        let weight_fifo = TestWeightFifo::new().unwrap();
+        assert_eq!(weight_fifo.fifos.len(), 3);
+        assert_eq!(weight_fifo.out_weights, [0, 0, 0]);
+        assert_eq!(weight_fifo.out_valids, [false, false, false]);
+    }
+
+    #[test]
+    fn loads_and_releases_weights_per_lane() {
+        let mut weight_fifo = TestWeightFifo::new().unwrap();
+        weight_fifo
+            .tick(inputs([10, 20, 30], [true, true, true], [false, false, false], false))
+            .unwrap();
+        weight_fifo
+            .tick(inputs([0, 0, 0], [false, false, false], [true, false, true], false))
+            .unwrap();
+
+        assert_eq!(weight_fifo.out_weights, [10, 0, 30]);
+        assert_eq!(weight_fifo.out_valids, [true, false, true]);
+    }
+
+    #[test]
+    fn each_lane_preserves_fifo_order_independently() {
+        let mut weight_fifo = TestWeightFifo::new().unwrap();
+
+        weight_fifo
+            .tick(inputs([1, 10, 100], [true, true, true], [false, false, false], false))
+            .unwrap();
+        weight_fifo
+            .tick(inputs([2, 20, 200], [true, true, true], [false, false, false], false))
+            .unwrap();
+        weight_fifo
+            .tick(inputs([0, 0, 0], [false, false, false], [true, true, true], false))
+            .unwrap();
+        assert_eq!(weight_fifo.out_weights, [1, 10, 100]);
+
+        weight_fifo
+            .tick(inputs([0, 0, 0], [false, false, false], [true, true, true], false))
+            .unwrap();
+        assert_eq!(weight_fifo.out_weights, [2, 20, 200]);
+    }
+
+    #[test]
+    fn reset_clears_all_fifos_and_outputs() {
+        let mut weight_fifo = TestWeightFifo::new().unwrap();
+        weight_fifo
+            .tick(inputs([4, 5, 6], [true, true, true], [false, false, false], false))
+            .unwrap();
+        weight_fifo
+            .tick(inputs([0, 0, 0], [false, false, false], [true, true, true], false))
+            .unwrap();
+
+        weight_fifo
+            .tick(inputs([9, 9, 9], [true, true, true], [true, true, true], true))
+            .unwrap();
+
+        assert_eq!(weight_fifo.out_weights, [0, 0, 0]);
+        assert_eq!(weight_fifo.out_valids, [false, false, false]);
+        assert!(matches!(
+            weight_fifo.tick(inputs([0, 0, 0], [false, false, false], [true, false, false], false)),
+            Err(WeightFifoError::Fifo(FifoError::PopEmptyQueue))
+        ));
+    }
+
+    #[test]
+    fn releasing_empty_lane_returns_wrapped_fifo_error() {
+        let mut weight_fifo = TestWeightFifo::new().unwrap();
+        assert!(matches!(
+            weight_fifo.tick(inputs([0, 0, 0], [false, false, false], [false, true, false], false)),
+            Err(WeightFifoError::Fifo(FifoError::PopEmptyQueue))
+        ));
+    }
+}
