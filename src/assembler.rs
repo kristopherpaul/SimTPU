@@ -31,3 +31,52 @@ pub enum AssemblerError {
         source: InstructionError
     },
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn assembles_matmul_with_little_endian_cycles() {
+        let binary = assemble("MATMUL 305419896").unwrap();
+        assert_eq!(binary, vec![0x01, 0x78, 0x56, 0x34, 0x12]);
+    }
+
+    #[test]
+    fn ignores_blank_lines_and_comments() {
+        let source = "\n# warm up\n  MATMUL 1  # one cycle\n\nMATMUL 2\n";
+        let binary = assemble(source).unwrap();
+        assert_eq!(binary, vec![0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00]);
+    }
+
+    #[test]
+    fn reports_missing_operand_and_source_line() {
+        let error = assemble("\n\nMATMUL").unwrap_err();
+        assert!(matches!(
+            error,
+            AssemblerError::ParseError {
+                line: 3,
+                source: InstructionError::MissingOperand {
+                    mnemonic: "MATMUL",
+                    parameter: "cycles",
+                },
+            }
+        ));
+    }
+
+    #[test]
+    fn reports_invalid_operand_and_source_line() {
+        let error = assemble("MATMUL nope").unwrap_err();
+        assert!(matches!(
+            error,
+            AssemblerError::ParseError {
+                line: 1,
+                source: InstructionError::InvalidOperand {
+                    mnemonic: "MATMUL",
+                    ..
+                },
+            }
+        ));
+    }
+}
