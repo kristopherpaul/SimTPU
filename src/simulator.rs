@@ -1,4 +1,6 @@
 use crate::hardware::mmu::{Mmu, MmuError};
+use crate::isa::Instruction;
+use crate::program::Program;
 
 pub struct Tpu {
     mmu: Mmu,
@@ -11,8 +13,15 @@ impl Tpu {
         })
     }
 
-    pub fn run(&mut self) -> Result<(), TpuError> {
-        self.tick()?;
+    pub fn run(&mut self, program: &Program) -> Result<(), TpuError> {
+        for instruction in program.instructions() {
+            match instruction {
+                Instruction::Matmul { cycles } => {
+                    println!("Executing Matmul instruction for {} cycles", cycles);
+                }
+            }
+        }
+        
         Ok(())
     }
 
