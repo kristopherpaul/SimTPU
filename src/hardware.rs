@@ -6,3 +6,4 @@ mod fifo;
 pub mod weight_fifo;
 pub mod vmem;
 pub mod skew_buffer;
+pub mod acc;
