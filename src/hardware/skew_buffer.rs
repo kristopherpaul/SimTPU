@@ -35,7 +35,7 @@ where
         })
     }
 
-    pub fn tick(&mut self, inputs: SkewBufferInputs<A>) -> Result<(), SkewBufferError> {
+    pub fn tick(&mut self, inputs: SkewBufferInputs<A, SIZE>) -> Result<(), SkewBufferError> {
         if inputs.strobes.reset {
             self.buffer = std::array::from_fn(|index| VecDeque::from(vec![A::default(); index]));
             self.out_data = [A::default(); SIZE];
@@ -74,9 +74,10 @@ pub enum SkewBufferError {
 mod tests {
     use super::*;
 
-    type TestSkewBuffer = SkewBuffer<u8>;
+    type TestSkewBuffer = SkewBuffer<u8, 2>;
+    const TEST_SIZE: usize = 2;
 
-    fn inputs(data: [u8; MMU_ROWS], load: bool, reset: bool) -> SkewBufferInputs<u8> {
+    fn inputs(data: [u8; TEST_SIZE], load: bool, reset: bool) -> SkewBufferInputs<u8, TEST_SIZE> {
         SkewBufferInputs {
             in_data: data,
             strobes: SkewBufferStrobes { load, reset },
@@ -87,10 +88,10 @@ mod tests {
     fn new_initializes_buffer_with_staggered_delays() {
         let buffer = TestSkewBuffer::new().unwrap();
         // Each buffer[i] should start with i default elements
-        for i in 0..MMU_ROWS {
+        for i in 0..TEST_SIZE {
             assert_eq!(buffer.buffer[i].len(), i);
         }
-        assert_eq!(buffer.out_data, [u8::default(); MMU_ROWS]);
+        assert_eq!(buffer.out_data, [u8::default(); TEST_SIZE]);
         assert!(!buffer.out_valid);
     }
 
@@ -148,9 +149,9 @@ mod tests {
 
         // After reset, buffer should be reinitialized
         assert!(!buffer.out_valid());
-        assert_eq!(buffer.out_data(), [0; MMU_ROWS]);
+        assert_eq!(buffer.out_data(), [0; TEST_SIZE]);
         // Verify internal state is reset to initial staggered delays
-        for i in 0..MMU_ROWS {
+        for i in 0..TEST_SIZE {
             assert_eq!(buffer.buffer[i].len(), i);
         }
     }
@@ -202,7 +203,7 @@ mod tests {
         // Collect outputs over following cycles
         let mut collected_outputs = vec![buffer.out_data()];
         
-        for _ in 1..MMU_ROWS {
+        for _ in 1..TEST_SIZE {
             buffer.tick(inputs([0, 0], true, false)).unwrap();
             collected_outputs.push(buffer.out_data());
         }
