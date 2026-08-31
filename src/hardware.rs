@@ -5,3 +5,4 @@ pub mod trans;
 mod fifo;
 pub mod weight_fifo;
 pub mod vmem;
+pub mod skew_buffer;
