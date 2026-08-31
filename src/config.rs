@@ -4,6 +4,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct TpuConfig {
     pub mmu: MmuConfig,
+    pub vmem: VmemConfig
 }
 
 impl TpuConfig {
@@ -18,6 +19,7 @@ impl TpuConfig {
 
     pub fn validate(&self) -> Result<(), TpuConfigError> {
         self.mmu.validate()?;
+        self.vmem.validate()?;
 
         Ok(())
     }
@@ -74,6 +76,21 @@ impl PeConfig {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct VmemConfig {
+    pub size: usize
+}
+
+impl VmemConfig {
+    pub fn validate(&self) -> Result<(), VmemConfigError> {
+        if self.size == 0 {
+            return Err(VmemConfigError::InvalidSize(self.size));
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum TpuConfigError {
     #[error("failed to parse config: {0}")]
@@ -84,6 +101,9 @@ pub enum TpuConfigError {
 
     #[error("mmu config error: {0}")]
     MmuConfig(#[from] MmuConfigError),
+
+    #[error("vmem config error: {0}")]
+    VmemConfig(#[from] VmemConfigError)
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -105,4 +125,10 @@ pub enum PeConfigError {
 
     #[error("incompatible bit widths: activation {act_bitw} > partial sum {psum_bitw}")]
     IncompatibleBitw {act_bitw: u8, psum_bitw: u8},
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum VmemConfigError {
+    #[error("invalid vmem size: {0}")]
+    InvalidSize(usize),
 }

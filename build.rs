@@ -31,11 +31,13 @@ fn main() -> Result<()> {
     let generated_code = format!(
         "pub const MMU_ROWS: usize = {};\n\
          pub const MMU_COLS: usize = {};\n\
+         pub const VMEM_SIZE: usize = {};\n\
          \n\
          pub type PeAct = {};\n\
          pub type PePsum = {};\n",
         config.mmu.num_rows,
         config.mmu.num_cols,
+        config.vmem.size,
         act_type,
         psum_type
     );

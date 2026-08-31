@@ -4,3 +4,6 @@ mmu:
   pe:
     act_bitw: 8
     psum_bitw: 16
+
+vmem:
+  size: 1024
