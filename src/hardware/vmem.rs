@@ -1,8 +1,11 @@
 use crate::types::{PeAct, VMEM_SIZE};
 
-pub struct Vmem<const SIZE: usize = VMEM_SIZE> {
-    mem: [PeAct; SIZE],
-    out_data: Vec<PeAct>,
+pub struct Vmem<
+    A = PeAct,
+    const SIZE: usize = VMEM_SIZE
+> {
+    mem: [A; SIZE],
+    out_data: Vec<A>,
     out_valid: bool
 }
 
@@ -12,28 +15,28 @@ pub struct VmemStrobes {
     pub reset: bool
 }
 
-pub struct VmemInputs {
+pub struct VmemInputs<A = PeAct> {
     pub addr: usize,
     pub size: usize,
-    pub wr_data: Vec<PeAct>,
+    pub wr_data: Vec<A>,
     pub strobes: VmemStrobes
 }
 
-impl<const SIZE: usize> Vmem<SIZE>
+impl<A, const SIZE: usize> Vmem<A, SIZE>
 where
-    PeAct: Default + Copy
+    A: Default + Copy
 {
     pub fn new() -> Result<Self, VmemError> {
         Ok(Self {
-            mem: [PeAct::default(); SIZE],
+            mem: [A::default(); SIZE],
             out_data: Vec::new(),
             out_valid: false
         })
     }
 
-    pub fn tick(&mut self, inputs: VmemInputs) -> Result<(), VmemError> {
+    pub fn tick(&mut self, inputs: VmemInputs<A>) -> Result<(), VmemError> {
         if inputs.strobes.reset {
-            self.mem = [PeAct::default(); SIZE];
+            self.mem = [A::default(); SIZE];
             self.out_data.clear();
             self.out_valid = false;
         } else {
@@ -61,7 +64,7 @@ where
         Ok(())
     }
 
-    pub fn out_data(&self) -> Vec<PeAct> {
+    pub fn out_data(&self) -> Vec<A> {
         self.out_data.clone()
     }
 
@@ -80,7 +83,7 @@ pub enum VmemError {
 mod tests {
     use super::*;
 
-    type TestVmem = Vmem<16>;
+    type TestVmem = Vmem<i8, 16>;
 
     fn inputs(addr: usize, size: usize, wr_data: Vec<PeAct>, read: bool, write: bool, reset: bool) -> VmemInputs {
         VmemInputs {
@@ -192,7 +195,7 @@ mod tests {
 
     #[test]
     fn large_contiguous_write_and_read() {
-        let mut vmem = Vmem::<256>::new().unwrap();
+        let mut vmem = Vmem::<i8, 256>::new().unwrap();
         let write_data: Vec<i8> = (0..100).map(|i| i as i8).collect();
         vmem.tick(inputs(0, 100, write_data.clone(), false, true, false))
             .unwrap();
