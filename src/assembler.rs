@@ -89,7 +89,7 @@ mod tests {
         let expected = [
             b'S', b'T', b'P', b'U',                // Magic
             5, 0, 0, 0,                            // InstrCount = 5
-            0x01, 0x78, 0x56, 0x34, 0x12           // Instructions
+            0x12, 0x78, 0x56, 0x34, 0x12           // Instructions
         ];
         assert_eq!(binary, expected);
     }
@@ -101,8 +101,8 @@ mod tests {
         let expected = [
             b'S', b'T', b'P', b'U',                // Magic
             10, 0, 0, 0,                           // InstrCount = 10
-            0x01, 0x01, 0x00, 0x00, 0x00,         // MATMUL 1
-            0x01, 0x02, 0x00, 0x00, 0x00          // MATMUL 2
+            0x12, 0x01, 0x00, 0x00, 0x00,         // MATMUL 1
+            0x12, 0x02, 0x00, 0x00, 0x00          // MATMUL 2
         ];
         assert_eq!(binary, expected);
     }
