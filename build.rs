@@ -28,18 +28,27 @@ fn main() -> Result<()> {
         _ => unreachable!("validated by PeConfig::validate")
     };
 
+    let addr_type = match config.vmem.addr_bitw {
+        8 => "u8",
+        16 => "u16",
+        32 => "u32",
+        _ => unreachable!("validated by VmemConfig::validate")
+    };
+
     let generated_code = format!(
         "pub const MMU_ROWS: usize = {};\n\
          pub const MMU_COLS: usize = {};\n\
          pub const VMEM_SIZE: usize = {};\n\
          \n\
          pub type PeAct = {};\n\
-         pub type PePsum = {};\n",
+         pub type PePsum = {};\n\
+         pub type VAddr = {};\n",
         config.mmu.num_rows,
         config.mmu.num_cols,
         config.vmem.size,
         act_type,
-        psum_type
+        psum_type,
+        addr_type
     );
 
     std::fs::write(out_path, generated_code).context("failed to write generated types.rs")?;

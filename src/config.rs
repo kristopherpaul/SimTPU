@@ -78,13 +78,19 @@ impl PeConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct VmemConfig {
-    pub size: usize
+    pub size: usize,
+    pub addr_bitw: u8
 }
 
 impl VmemConfig {
     pub fn validate(&self) -> Result<(), VmemConfigError> {
         if self.size == 0 {
             return Err(VmemConfigError::InvalidSize(self.size));
+        }
+
+        match self.addr_bitw {
+            8 | 16 | 32 => {},
+            _ => return Err(VmemConfigError::InvalidAddrBitw(self.addr_bitw)),
         }
 
         Ok(())
@@ -131,4 +137,7 @@ pub enum PeConfigError {
 pub enum VmemConfigError {
     #[error("invalid vmem size: {0}")]
     InvalidSize(usize),
+
+    #[error("unsupported address bit width: {0}")]
+    InvalidAddrBitw(u8),
 }

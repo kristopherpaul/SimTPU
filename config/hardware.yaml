@@ -7,3 +7,4 @@ mmu:
 
 vmem:
   size: 1024
+  addr_bitw: 16
