@@ -19,6 +19,7 @@ impl Tpu {
                 Instruction::Matmul { cycles } => {
                     println!("Executing Matmul instruction for {} cycles", cycles);
                 }
+                _ => println!("Instruction is not implemented")
             }
         }
         

@@ -17,7 +17,7 @@ macro_rules! isa {
             $(
                 $variant {
                     $( $param: $ty ),*
-                }
+                },
             )*
         }
 
@@ -49,7 +49,7 @@ macro_rules! isa {
                             $(
                                 $crate::isa::codec::ParamCodec::encode(*$param, out);
                             )*
-                        }
+                        },
                     )*
                 }
             }
@@ -78,7 +78,7 @@ macro_rules! isa {
                                         })?,
                                 )*
                             })
-                        }
+                        },
                     )*
 
                     opcode => Err(
@@ -88,7 +88,8 @@ macro_rules! isa {
             }
 
             pub fn parse_assembly(line: &str) -> Result<Self, $crate::isa::define::InstructionError> {
-                let mut parts = line.split_whitespace();
+                let norm_line = line.replace(",", " ");
+                let mut parts = norm_line.split_whitespace();
 
                 let mnemonic = parts
                     .next()
@@ -130,7 +131,7 @@ macro_rules! isa {
                             Ok(Self::$variant {
                                 $( $param ),*
                             })
-                        }
+                        },
                     )*
 
                     _ => Err(

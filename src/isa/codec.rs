@@ -32,7 +32,15 @@ macro_rules! impl_param_codec {
                 }
 
                 fn parse(s: &str) -> Result<Self, $crate::isa::codec::CodecError> {
-                    s.parse::<$ty>().map_err(|_| {
+                    let value = if let Some(hex) = s.strip_prefix("0x") {
+                        <$ty>::from_str_radix(hex, 16)
+                    } else if let Some(hex) = s.strip_prefix("0X") {
+                        <$ty>::from_str_radix(hex, 16)
+                    } else {
+                        s.parse::<$ty>()
+                    };
+
+                    value.map_err(|_| {
                         $crate::isa::codec::CodecError::InvalidValue {
                             ty: stringify!($ty),
                             value: s.to_owned(),
